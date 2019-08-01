@@ -40,8 +40,10 @@ app.layout = dbc.Container([
                        min=0, max=len(periods) - 1,
                        value=len(periods) - 1),
             html.Br(),
-            dcc.Graph(id='top_countries_chart',
-                      config={'displayModeBar': False}),
+            dcc.Loading([
+                dcc.Graph(id='top_countries_chart',
+                          config={'displayModeBar': False}),
+            ]),
         ], lg=8),
         dbc.Col([
             html.Div(
@@ -84,11 +86,17 @@ app.layout = dbc.Container([
     html.Br(),
     dbc.Row([
         dbc.Col([
-            dcc.Graph(id='chart_by_country_quarter',
-                      config={'displayModeBar': False}),
+            dcc.Loading([
+                dcc.Graph(id='chart_by_country_quarter',
+                          config={'displayModeBar': False}),
+            ]),
         ], lg=7),
         dbc.Col([
-            dcc.Graph(id='chart_top_gainers', config={'displayModeBar': False}),
+            dcc.Loading([
+                dcc.Graph(id='chart_top_gainers',
+                          config={'displayModeBar': False}),
+            ]),
+
         ], lg=4),
     ]),
     html.Br(), html.Br(), html.Br(),
