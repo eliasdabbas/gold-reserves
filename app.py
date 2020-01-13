@@ -103,7 +103,7 @@ app.layout = dbc.Container([
 ], style={'background-color': '#eeeeee'}, fluid=True)
 
 excluded_regions = ['World', 'Advanced Economies', 'Euro Area',
-                    'Europe',
+                    'Europe', 'CIS',
                     'Central African Economic and Monetary Community',
                     'Emerging and Developing Europe',
                     'Emerging and Developing Countries',
@@ -216,4 +216,4 @@ def plot_countries_in_quarters(countries, quarters):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server()
