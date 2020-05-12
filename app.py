@@ -21,6 +21,22 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.COSMO])
 
 server = app.server
 
+countries_unique = set(gold_reserves['Country Name'].unique())
+
+countries_last_period = (gold_reserves
+                         [gold_reserves['Time Period'] == gold_reserves['Time Period'].max()]
+                         ['Country Name'].unique())
+
+missing_countries = countries_unique.difference(countries_last_period)
+
+modeBarButtonsToRemove = ['lasso2d', 'select2d', 'hoverClosestGeo', 'pan2d',
+                          'select2d', 'lasso2d', 'autoScale2d',
+                          'toggleSpikelines', 'hoverClosestCartesian',
+                          'hoverCompareCartesian']
+
+modeBarButtonsToAdd = ['drawline', 'drawopenpath', 'drawcircle',
+                       'drawrect', 'eraseshape']
+
 app.layout = dbc.Container([
     html.Br(), html.Br(),
     dbc.Row([
@@ -42,7 +58,16 @@ app.layout = dbc.Container([
             html.Br(),
             dcc.Loading([
                 dcc.Graph(id='top_countries_chart',
-                          config={'displayModeBar': False}),
+                          config={'displayModeBar': 'hover',
+                                  'displaylogo': False,
+                                  'showTips': True,
+                                  'modeBarButtonsToRemove': modeBarButtonsToRemove,
+                                  'modeBarButtonsToAdd': modeBarButtonsToAdd,
+                                  'toImageButtonOptions': {'format': 'svg'}}
+                          ),
+                html.A(children='* Please note the missing countries from '
+                                'the latest quarter',
+                       href='#missing')
             ]),
         ], lg=8),
         dbc.Col([
@@ -88,18 +113,46 @@ app.layout = dbc.Container([
         dbc.Col([
             dcc.Loading([
                 dcc.Graph(id='chart_by_country_quarter',
-                          config={'displayModeBar': False}),
+                          config={'displayModeBar': 'hover',
+                                  'displaylogo': False,
+                                  'showTips': True,
+                                  'modeBarButtonsToRemove': modeBarButtonsToRemove,
+                                  'modeBarButtonsToAdd': modeBarButtonsToAdd,
+                                  'toImageButtonOptions': {'format': 'svg'}
+                                  }
+                          ),
             ]),
         ], lg=7),
         dbc.Col([
             dcc.Loading([
                 dcc.Graph(id='chart_top_gainers',
-                          config={'displayModeBar': False}),
+                          config={'displayModeBar': 'hover',
+                                  'displaylogo': False,
+                                  'showTips': True,
+                                  'modeBarButtonsToRemove': modeBarButtonsToRemove,
+                                  'modeBarButtonsToAdd': modeBarButtonsToAdd,
+                                  'toImageButtonOptions': {'format': 'svg'}
+                                  }
+                          ),
             ]),
 
-        ], lg=4),
+        ], lg=5, md=8),
     ]),
     html.Br(), html.Br(), html.Br(),
+    dbc.Row([
+        dbc.Col(lg=1),
+        dbc.Col([
+            html.B(html.A(id='missing',
+                          children='Countries missing from latest quarter: (' +
+                          str(len(missing_countries)) + ')',
+                   style={'color': '#A29061', 'face': 'bold'})),
+            html.Br(),
+            html.Span(' - '.join(sorted(missing_countries)),
+                      style={'color': '#A29061'})
+        ], lg=7)
+
+    ])
+
 ], style={'background-color': '#eeeeee'}, fluid=True)
 
 excluded_regions = ['World', 'Advanced Economies', 'Euro Area',
@@ -129,6 +182,7 @@ def plot_top_gainers_losers(quarters):
 
     fig = go.Figure()
     fig.add_bar(x=df['diff'], y=df['Country Name'], orientation='h',
+                hoverlabel={'namelength': 500},
                 marker={'color': ['red'] * 10 + ['green'] * 10})
     fig.layout.height = 600
     fig.layout.paper_bgcolor = '#eeeeee'
@@ -157,11 +211,12 @@ def plot_top_countries(quarter):
     fig.add_bar(x=df['tonnes'][:15][::-1],
                 y=[str(x) + ': ' for x in range(len(df['Country Name'][:15]), 0, -1)] + df['Country Name'][:15][::-1].astype('str'),
                 marker={'color': '#A29061'},
+                hoverlabel={'namelength': 500},
                 orientation='h')
     fig.layout.paper_bgcolor = '#eeeeee'
     fig.layout.plot_bgcolor = '#eeeeee'
     fig.layout.height = 600
-    fig.layout.title = 'Top Countries in Gold reserves ' + str(quarter)
+    fig.layout.title = 'Top Countries in Gold reserves ' + str(quarter) + '*'
     fig.layout.xaxis.title = 'Tonnes'
     fig.layout.font = {'color': '#A29061'}
     return fig.to_dict()
@@ -201,6 +256,7 @@ def plot_countries_in_quarters(countries, quarters):
         fig.add_scatter(x=df['Time Period'].astype('str'),
                         y=df['tonnes'],
                         mode='lines+markers',
+                        hoverlabel={'namelength': 500},
                         name=country)
     fig.layout.paper_bgcolor = '#eeeeee'
     fig.layout.plot_bgcolor = '#eeeeee'
@@ -216,4 +272,4 @@ def plot_countries_in_quarters(countries, quarters):
 
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
